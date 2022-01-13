@@ -1,10 +1,10 @@
 ﻿@page
 @model KeyVaultEditor.Pages.KeyVaultModel
 @{
-    ViewData["Title"] = Model.KeyVaultService.Url;
+    ViewData["Title"] = "KeyVault Edit";
     var secrets = await Model.KeyVaultService.GetAllSecretsAsync();
 }
-
+<h1>KeyVault: @Model.KeyVaultService.Url</h1>
 <table>
     <thead>
         <tr>
