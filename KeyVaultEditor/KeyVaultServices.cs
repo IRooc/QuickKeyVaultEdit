@@ -14,7 +14,7 @@ namespace KeyVaultEditor
             this.logger = logger;
             Url = configuration["AzureKeyVaultUrl"];
             logger.LogInformation("Accessing {keyvault}", Url);
-            secretClient = new SecretClient(new Uri(Url), new VisualStudioCredential());
+            secretClient = new SecretClient(new Uri(Url), new DefaultAzureCredential());
         }
 
         public async Task<bool> DeleteSecretValue(string name)
