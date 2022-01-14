@@ -12,6 +12,10 @@ body {
     margin-left: 25px;
 }
 
+ul.failed {
+    color: red;
+}
+
 table {
     border-collapse: collapse;
     width: 90vw
@@ -36,7 +40,6 @@ table {
         border-bottom: 1px solid black;
     }
 
-
         table tr.saved {
             background-color: lightgreen;
         }
@@ -57,6 +60,7 @@ table {
     table textarea {
         width: 100%
     }
+
     table.small {
         width: auto;
     }
@@ -66,3 +70,38 @@ table {
             border: none;
             width: auto;
         }
+
+
+
+.modal.show {
+    display: block !important;
+    position: fixed;
+    top: 3em;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    z-index: 10;
+    height: calc(100vh -3em);
+}
+
+    .modal.show .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background-color: rgba(0,0,0,0.7);
+        z-index: 10;
+    }
+
+
+.modal .modal-content {
+    width: 40em;
+    background-color: white;
+    height: auto;
+    
+    position: fixed;
+    left: calc(50% - 20em - 20px);
+    padding: 20px;
+    z-index: 11;
+}

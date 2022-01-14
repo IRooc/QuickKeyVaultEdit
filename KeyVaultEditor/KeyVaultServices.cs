@@ -39,10 +39,18 @@ namespace KeyVaultEditor
             return secrets;
         }
 
-        public async Task<bool> StoreNewKeyVaultSecretValue(string name, string value)
+        public async Task<(bool,string?)> StoreNewKeyVaultSecretValue(string name, string value)
         {
-            var secret = await secretClient.SetSecretAsync(name, value);
-            return secret != null;
+            try
+            {
+                var secret = await secretClient.SetSecretAsync(name, value);
+                return (secret != null, null);
+            }
+            catch (Azure.RequestFailedException rfe)
+            {
+                logger.LogError(rfe, "Failed to add {name}", name);
+                return (false, rfe.Message);
+            }
         }
     }
 }

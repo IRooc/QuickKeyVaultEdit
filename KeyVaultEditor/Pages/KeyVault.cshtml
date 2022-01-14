@@ -69,3 +69,20 @@
         </form>
     </tbody>
 </table>
+
+<div class="modal @(Model.Failed.Any() ? "show":"")">
+	<div class="modal-backdrop"></div>
+	<div class="modal-content">
+		<div class="modal-header">
+			
+            <ul class="failed">
+            @foreach(var f in Model.Failed) {
+                <li>Failed to Save @f</li>
+            }
+            </ul>
+		</div>
+		<div class="modal-footer">
+			<button data-dismiss>Close</button>	
+		</div>
+	</div>
+</div>

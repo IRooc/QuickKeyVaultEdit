@@ -14,10 +14,12 @@ namespace KeyVaultEditor.Pages
         public KeyVaultServices KeyVaultService { get; }
 
         public List<string> Saved { get; set; } = new List<string>();
+        public List<string> Failed { get; set; } = new List<string>();
 
         public void OnGet()
         {
             Saved = ((string[]?)TempData["Saved"])?.ToList() ?? new List<string>();
+            Failed = ((string[]?)TempData["Failed"])?.ToList() ?? new List<string>();
         }
 
         public async Task<JsonResult> OnGetDownload()
@@ -30,9 +32,17 @@ namespace KeyVaultEditor.Pages
         {
             var name = Request.Form["Name"].ToString();
             var newValue = Request.Form["Value"].ToString();
-            await KeyVaultService.StoreNewKeyVaultSecretValue(name, newValue);
-            Saved.Add(name);
+            var (success, message) = await KeyVaultService.StoreNewKeyVaultSecretValue(name, newValue);
+            if (success)
+            {
+                Saved.Add(name);
+            }
+            else
+            {
+                Failed.Add($"{name}: {message}" );
+            }
             TempData.Add("Saved", Saved);
+            TempData.Add("Failed", Failed);
             return RedirectToPage();
         }
         public async Task<IActionResult> OnPostDelete()
@@ -53,18 +63,27 @@ namespace KeyVaultEditor.Pages
                     var settings = await KeyVaultService.GetAllSecretsAsync();
                     var data = reader.ReadToEnd();
                     var list = System.Text.Json.JsonSerializer.Deserialize<List<KV>>(data);
-                    foreach(var kv in list)
+                    foreach (var kv in list)
                     {
                         if (!settings.Any(s => s.Name == kv.key) || overWrite)
                         {
-                            await KeyVaultService.StoreNewKeyVaultSecretValue(kv.key, kv.value);
-                            Saved.Add(kv.key);
+                            var (success, message) = await KeyVaultService.StoreNewKeyVaultSecretValue(kv.key, kv.value);
+                            if (success)
+                            {
+                                Saved.Add(kv.key);
+                            }
+                            else
+                            {
+                                Failed.Add($"{kv.key}: {message}");
+
+                            }
                         }
                     }
 
                 }
             }
             TempData.Add("Saved", Saved);
+            TempData.Add("Failed", Failed);
             return RedirectToPage();
         }
     }
@@ -73,4 +92,5 @@ namespace KeyVaultEditor.Pages
     {
         public string key { get; set; }
         public string value { get; set; }
-    }}
+    }
+}
