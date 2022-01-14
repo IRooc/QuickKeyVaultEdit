@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
@@ -62,15 +63,15 @@ namespace KeyVaultEditor.Pages
                 {
                     var settings = await KeyVaultService.GetAllSecretsAsync();
                     var data = reader.ReadToEnd();
-                    var list = System.Text.Json.JsonSerializer.Deserialize<List<KV>>(data);
-                    foreach (var kv in list)
+                    var list = JsonSerializer.Deserialize<List<KV>>(data) ?? new List<KV>();
+                    foreach (var kv in list.Where(k => k?.key != null && k?.value != null))
                     {
                         if (!settings.Any(s => s.Name == kv.key) || overWrite)
                         {
-                            var (success, message) = await KeyVaultService.StoreNewKeyVaultSecretValue(kv.key, kv.value);
+                            var (success, message) = await KeyVaultService.StoreNewKeyVaultSecretValue(kv.key!, kv.value!);
                             if (success)
                             {
-                                Saved.Add(kv.key);
+                                Saved.Add(kv.key!);
                             }
                             else
                             {
@@ -90,7 +91,7 @@ namespace KeyVaultEditor.Pages
 
     record KV
     {
-        public string key { get; set; }
-        public string value { get; set; }
+        public string? key { get; set; }
+        public string? value { get; set; }
     }
 }
