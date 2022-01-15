@@ -6,13 +6,7 @@ if (allSaved.length > 0) {
    for (let i = 0; i < allSaved.length; i++) {
       const saved = allSaved[i];
       setTimeout(() => {
-         saved.classList += '-light';
-         setTimeout(() => {
-            saved.classList += '-er';
-            setTimeout(() => {
-               saved.classList = null;
-            }, 3000);
-         }, 3000);
+         saved.className = '';
       }, 2000);
    }
 }

@@ -37,19 +37,13 @@ table {
 
 
     table tr {
-        border-bottom: 1px solid black;
+        border-bottom: 1px solid lightgrey;
+        background-color: transparent;
+        transition: background-color 5s linear; 
     }
 
         table tr.saved {
             background-color: lightgreen;
-        }
-
-        table tr.saved-light {
-            background-color: #bee9be;
-        }
-
-        table tr.saved-light-er {
-            background-color: #d2f4d2;
         }
 
         table tr td {
