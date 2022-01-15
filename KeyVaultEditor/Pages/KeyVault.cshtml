@@ -6,7 +6,8 @@
 
     string TypeFromName(string name) {
        if (name.IndexOf("Secret", StringComparison.InvariantCultureIgnoreCase)>=0 ||
-            name.IndexOf("Password", StringComparison.InvariantCultureIgnoreCase)>=0){
+           name.IndexOf("Password", StringComparison.InvariantCultureIgnoreCase)>=0 ||
+           name.IndexOf("ConnectionString", StringComparison.InvariantCultureIgnoreCase)>=0){
           return "password";
        }
        return "text";
