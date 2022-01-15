@@ -3,5 +3,8 @@
 @{
     ViewData["Title"] = "Home page";
 }
-
-<a href="/KeyVault">goto edit</a>
+<form asp-page-handler="GotoEdit" method="post">
+   <label>Enter Vault url
+   <input type="text" name="url"/></label>
+   <button>Goto Edit</button>
+</form>
