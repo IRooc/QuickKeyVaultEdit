@@ -27,3 +27,13 @@ for (let i = 0; i < dismisses.length; i++) {
         document.querySelector('.modal.show').classList = "modal";
     });
 }
+
+var pwInputs = document.querySelectorAll('input[type="password"]');
+for (let i = 0; i < pwInputs.length; i++) {
+    var input = pwInputs[i];
+    input.addEventListener('click', (e) => {
+       if (e.ctrlKey) {
+         e.target.type =  e.target.type == 'text' ? 'password' : 'text';
+       }
+    });
+}

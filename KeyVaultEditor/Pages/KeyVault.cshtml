@@ -3,6 +3,14 @@
 @{
     ViewData["Title"] = "KeyVault Edit";
     var secrets = await Model.KeyVaultService.GetAllSecretsAsync();
+
+    string TypeFromName(string name) {
+       if (name.IndexOf("Secret", StringComparison.InvariantCultureIgnoreCase)>=0 ||
+            name.IndexOf("Password", StringComparison.InvariantCultureIgnoreCase)>=0){
+          return "password";
+       }
+       return "text";
+    }
 }
 <h1>KeyVault: @Model.KeyVaultService.Url</h1>
 <table>
@@ -24,7 +32,7 @@
                     <input type="hidden" name="Name" value="@s.Name" />
                 </td>
                 <td>
-                    <input type="text" name="Value" value="@s.Value" />
+                    <input type="@TypeFromName(s.Name)" name="Value" value="@s.Value" />
                 </td>
                 <td>
                     <button type="submit">Save</button>
