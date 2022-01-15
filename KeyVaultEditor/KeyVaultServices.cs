@@ -7,7 +7,7 @@ namespace KeyVaultEditor
    {
       private SecretClient? secretClient;
       private readonly ILogger<KeyVaultServices> logger;
-      public string? Url { get; set;}
+      public string? Url { get; set; }
 
       public KeyVaultServices(ILogger<KeyVaultServices> logger)
       {
@@ -16,28 +16,38 @@ namespace KeyVaultEditor
 
       public void SetSecretClient(Uri url)
       {
-         Url = url.AbsoluteUri;
-         logger.LogInformation("Accessing {keyvault}", url);
-         secretClient = new SecretClient(url, new DefaultAzureCredential());
+         if (Url != url.AbsoluteUri)
+         {
+            Url = url.AbsoluteUri;
+            logger.LogInformation("Accessing {keyvault}", url);
+            secretClient = new SecretClient(url, new DefaultAzureCredential());
+         }
       }
 
       public async Task<bool> DeleteSecretValue(string name)
       {
-         var op = await secretClient.StartDeleteSecretAsync(name);
-         var res = await op.WaitForCompletionAsync();
+         if (secretClient != null)
+         {
+            var op = await secretClient.StartDeleteSecretAsync(name);
+            var res = await op.WaitForCompletionAsync();
 
-         return res?.Value?.Name == name;
+            return res?.Value?.Name == name;
+         }
+         return false;
       }
 
       public async Task<IList<KeyVaultSecret>> GetAllSecretsAsync()
       {
          var secrets = new List<KeyVaultSecret>();
-         var secretProperties = secretClient.GetPropertiesOfSecretsAsync();
-
-         await foreach (var secretProperty in secretProperties)
+         if (secretClient != null)
          {
-            var response = await secretClient.GetSecretAsync(secretProperty.Name);
-            secrets.Add(response);
+            var secretProperties = secretClient.GetPropertiesOfSecretsAsync();
+
+            await foreach (var secretProperty in secretProperties)
+            {
+               var response = await secretClient.GetSecretAsync(secretProperty.Name);
+               secrets.Add(response);
+            }
          }
 
          return secrets;
@@ -47,8 +57,12 @@ namespace KeyVaultEditor
       {
          try
          {
-            var secret = await secretClient.SetSecretAsync(name, value);
-            return (secret != null, null);
+            if (secretClient != null)
+            {
+               var secret = await secretClient.SetSecretAsync(name, value);
+               return (secret != null, null);
+            }
+            return (false, "No Vault URL set");
          }
          catch (Azure.RequestFailedException rfe)
          {

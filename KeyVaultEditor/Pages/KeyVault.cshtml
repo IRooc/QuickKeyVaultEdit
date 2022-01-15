@@ -13,7 +13,7 @@
        return "text";
     }
 }
-<h1>KeyVault: @Model.KeyVaultService.Url</h1>
+<h1>KeyVault: <a href="/">@(Model.KeyVaultService.Url ?? "set url")</a></h1>
 <table>
     <thead>
         <tr>
