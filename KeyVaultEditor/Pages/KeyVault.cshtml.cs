@@ -1,6 +1,7 @@
-using System.Text.Json;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Text.Json;
 
 namespace KeyVaultEditor.Pages
 {
@@ -26,7 +27,7 @@ namespace KeyVaultEditor.Pages
         public async Task<JsonResult> OnGetDownload()
         {
             var settings = await KeyVaultService.GetAllSecretsAsync();
-            return new JsonResult(settings.Select(s => new { Key = s.Name, Value = s.Value }));
+            return new JsonResult(settings.ToDictionary(s => s.Name.Replace("--", ConfigurationPath.KeyDelimiter), s => s.Value));
         }
 
         public async Task<IActionResult> OnPost()
@@ -40,7 +41,7 @@ namespace KeyVaultEditor.Pages
             }
             else
             {
-                Failed.Add($"{name}: {message}" );
+                Failed.Add($"{name}: {message}");
             }
             TempData.Add("Saved", Saved);
             TempData.Add("Failed", Failed);
@@ -63,23 +64,8 @@ namespace KeyVaultEditor.Pages
                 {
                     var settings = await KeyVaultService.GetAllSecretsAsync();
                     var data = reader.ReadToEnd();
-                    var list = JsonSerializer.Deserialize<List<KV>>(data) ?? new List<KV>();
-                    foreach (var kv in list.Where(k => k?.key != null && k?.value != null))
-                    {
-                        if (!settings.Any(s => s.Name == kv.key) || overWrite)
-                        {
-                            var (success, message) = await KeyVaultService.StoreNewKeyVaultSecretValue(kv.key!, kv.value!);
-                            if (success)
-                            {
-                                Saved.Add(kv.key!);
-                            }
-                            else
-                            {
-                                Failed.Add($"{kv.key}: {message}");
-
-                            }
-                        }
-                    }
+                    var list = JsonSerializer.Deserialize<JsonDocument>(data) ?? JsonDocument.Parse("{}");
+                    await SaveElement(string.Empty, overWrite, settings, list.RootElement);
 
                 }
             }
@@ -87,11 +73,40 @@ namespace KeyVaultEditor.Pages
             TempData.Add("Failed", Failed);
             return RedirectToPage();
         }
+
+        private async Task SaveElement(string prefix, bool overWrite, IEnumerable<KeyVaultSecret> settings, JsonElement root)
+        {
+            foreach (var jobj in root.EnumerateObject())
+            {
+                if (jobj.Value.ValueKind == JsonValueKind.Object)
+                {
+                    await SaveElement(jobj.Name + "--", overWrite, settings, jobj.Value);
+                }
+                else if (jobj.Value.ValueKind == JsonValueKind.String ||
+                         jobj.Value.ValueKind == JsonValueKind.Number ||
+                         jobj.Value.ValueKind == JsonValueKind.True ||
+                         jobj.Value.ValueKind == JsonValueKind.False)
+                {
+                    var key = prefix + jobj.Name.Replace(ConfigurationPath.KeyDelimiter,"--");
+                    if (!settings.Any(s => s.Name == key) || overWrite)
+                    {
+                        var (success, message) = await KeyVaultService.StoreNewKeyVaultSecretValue(key, jobj.Value.ToString());
+                        if (success)
+                        {
+                            Saved.Add(key);
+                        }
+                        else
+                        {
+                            Failed.Add($"{key}: {message}");
+                        }
+                    }
+                }
+                else
+                {
+                    Failed.Add($"{jobj.Name}: Unsupported value kind in Json {jobj.Value.ValueKind} with value {jobj.Value}");
+                }
+            }
+        }
     }
 
-    record KV
-    {
-        public string? key { get; set; }
-        public string? value { get; set; }
-    }
 }
