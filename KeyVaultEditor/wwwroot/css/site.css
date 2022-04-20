@@ -99,3 +99,7 @@ table {
     padding: 20px;
     z-index: 11;
 }
+#storedItemsDiv button {
+    display: block;
+    margin: 10px 0
+}

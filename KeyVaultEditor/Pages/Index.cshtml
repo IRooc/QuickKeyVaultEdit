@@ -6,5 +6,6 @@
 <form asp-page-handler="GotoEdit" method="post">
    <label>Enter Vault url
    <input type="text" name="url" value="@Model.KeyVaultService.Url" required/></label>
-   <button>Goto Edit</button>
+   <button id="gotoEdit">Goto Edit</button>
 </form>
+<div id="storedItemsDiv"></div>
