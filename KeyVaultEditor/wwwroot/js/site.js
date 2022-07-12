@@ -58,12 +58,11 @@
 
 
     const selectItem = (e) => {
-        const url = e.target.innerText;
+        const url = e.target.dataset.storedvalue;
         if (e.ctrlKey) {
             const ix = storedItems.indexOf(url);
             if (ix >= 0) {
                 storedItems.splice(ix, 1);
-                console.log('removed',ix, storedItems);
                 localStorage.setItem('storedItems', JSON.stringify(storedItems));
             }
             e.target.remove();
@@ -75,11 +74,13 @@
 
     if (storedItemsDiv) {
         storedItems = JSON.parse(localStorage.getItem('storedItems') ?? "[]");
+        storedItems.sort();
         for (let i = 0; i < storedItems.length; i++) {
             const el = document.createElement('button');
             el.type = 'button';
             el.title = 'Ctrl click to remove';
             el.onclick = selectItem;
+            el.dataset.storedvalue = storedItems[i];
             el.innerText = storedItems[i];
             storedItemsDiv.appendChild(el);
         }
