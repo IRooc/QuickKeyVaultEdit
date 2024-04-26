@@ -5,9 +5,10 @@
     var secrets = await Model.KeyVaultService.GetAllSecretsAsync();
 
     string TypeFromName(string name) {
-       if (name.IndexOf("Secret", StringComparison.InvariantCultureIgnoreCase)>=0 ||
-           name.IndexOf("Password", StringComparison.InvariantCultureIgnoreCase)>=0 ||
-           name.IndexOf("ConnectionString", StringComparison.InvariantCultureIgnoreCase)>=0){
+        if (name.IndexOf("Secret", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
+            name.IndexOf("Password", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
+            name.EndsWith("Key", StringComparison.InvariantCultureIgnoreCase) ||
+            name.IndexOf("ConnectionString", StringComparison.InvariantCultureIgnoreCase)>=0) {
           return "password";
        }
        return "text";
