@@ -51,8 +51,7 @@ namespace KeyVaultEditor.Pages
         {
             var name = Request.Form["Name"].ToString();
             await KeyVaultService.DeleteSecretValue(name);
-            TempData.Add("Deleted", name);
-            return RedirectToPage();
+            return RedirectToPage(new { deleted = name });
         }
         public async Task<IActionResult> OnPostUpload()
         {
