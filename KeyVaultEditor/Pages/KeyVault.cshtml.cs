@@ -29,6 +29,20 @@ namespace KeyVaultEditor.Pages
             var settings = await KeyVaultService.GetAllSecretsAsync();
             return new JsonResult(settings.ToDictionary(s => s.Name.Replace("--", ConfigurationPath.KeyDelimiter), s => s.Value));
         }
+        public async Task<JsonResult> OnGetDownloadAzureEnv()
+        {
+            var settings = await KeyVaultService.GetAllSecretsAsync();
+            Dictionary<string, string> value = settings.ToDictionary(s => s.Name.Replace("--", ConfigurationPath.KeyDelimiter), s => s.Value);
+
+            return new JsonResult(value.Select(kv => {
+                return new
+                {
+                    name = kv.Key,
+                    value = kv.Value,
+                    slotSetting = true
+                };
+            }));
+        }
 
         public async Task<IActionResult> OnPost()
         {
