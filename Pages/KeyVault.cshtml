@@ -4,14 +4,16 @@
     ViewData["Title"] = "KeyVault Edit";
     var secrets = await Model.KeyVaultService.GetAllSecretsAsync();
 
-    string TypeFromName(string name) {
+    string TypeFromName(string name)
+    {
         if (name.IndexOf("Secret", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
             name.IndexOf("Password", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
             name.EndsWith("Key", StringComparison.InvariantCultureIgnoreCase) ||
-            name.IndexOf("ConnectionString", StringComparison.InvariantCultureIgnoreCase)>=0) {
-          return "password";
-       }
-       return "text";
+            name.IndexOf("ConnectionString", StringComparison.InvariantCultureIgnoreCase) >= 0)
+        {
+            return "password";
+        }
+        return "text";
     }
 }
 <h1>KeyVault: <a href="/">@(Model.KeyVaultService.Url ?? "set url")</a></h1>
@@ -53,49 +55,79 @@
         <form method="post">
         <tr>
             <td>
-                <input type="text" name="Name" />
+                <input type="text" name="Name" placeholder="Key (note: colon ':' will be replaced by '--')" />
             </td>
             <td>
-                <input type="text" name="Value" />
+                <input type="text" name="Value" placeholder="Value" />
             </td>
             <td>
                 <button type="submit" name="Save">Save</button>
             </td>
         </tr>
         </form>
-        <form method="post" asp-page-handler="Upload" enctype="multipart/form-data" >
+        <form method="post" asp-page-handler="Multiple" enctype="multipart/form-data">
+        <tr>
+            <td>Add multiple settings from config</td>
+            <td><textarea name="Multiple"></textarea></td>
+            <td>
+                <table class="small">
+                    <tr>
+                        <td>
+                            <label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label>
+                        </td>
+                        <td>
+                            <button type="submit" name="Save">Save</button>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td></td>
+        </tr>
+        </form>
+        <form method="post" asp-page-handler="Upload" enctype="multipart/form-data">
         <tr>
             <td>
-                <a asp-page-handler="Download" target="_blank">Download all settings</a>
+                Upload appsettings.json file
             </td>
             <td>
-                <a asp-page-handler="DownloadAzureEnv" target="_blank">Download azure environment settings</a>
+                <table class="small">
+                    <tr>
+                        <td><input type="file" name="Settings" /></td>
+                        <td><label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label></td>
+                    </tr>
+                </table>
+
             </td>
             <td>
-                <table class="small"><tr><td><input type="file" name="Settings" /></td><td><label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label></td><td><button type="submit" name="Save">Upload</button></td></tr></table>
-
-
+            <button type="submit" name="Save">Upload</button>
             </td>
             <td>
             </td>
         </tr>
         </form>
+        <tr>
+            <td colspan="4" style="display:flex;gap:2rem;">
+                <a asp-page-handler="Download" target="_blank">Download appsettings.json</a>
+                <a asp-page-handler="DownloadAzureEnv" target="_blank">Download azure environment settings</a>
+            </td>
+        </tr>
     </tbody>
 </table>
 
 <div class="modal @(Model.Failed.Any() ? "show":"")">
-	<div class="modal-backdrop"></div>
-	<div class="modal-content">
-		<div class="modal-header">
-			
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+        <div class="modal-header">
+
             <ul class="failed">
-            @foreach(var f in Model.Failed) {
-                <li>Failed to Save @f</li>
-            }
+                @foreach (var f in Model.Failed)
+                {
+                    <li>Failed to Save @f</li>
+                }
             </ul>
-		</div>
-		<div class="modal-footer">
-			<button data-dismiss>Close</button>	
-		</div>
-	</div>
+        </div>
+        <div class="modal-footer">
+            <button data-dismiss>Close</button>
+        </div>
+    </div>
 </div>
