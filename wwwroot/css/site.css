@@ -52,8 +52,13 @@ table {
 
     table input,
     table textarea {
-        width: 100%
+        width: 100%;        
     }
+        table textarea.input-textarea {
+            height: 1.3rem;
+            text-wrap: nowrap;
+            overflow-x: hidden;
+        }
 
     table.small {
         width: auto;

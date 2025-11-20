@@ -36,7 +36,12 @@
                     <input type="hidden" name="Name" value="@s.Name" />
                 </td>
                 <td>
-                    <input type="@TypeFromName(s.Name)" name="Value" value="@s.Value" />
+                        @if (TypeFromName(s.Name) == "password")
+                        {
+                            <input type="@TypeFromName(s.Name)" name="Value" value="@s.Value" />
+                        } else {
+                            <textarea class="input-textarea" name="Value" wrap="off">@s.Value</textarea>
+                        }
                 </td>
                 <td>
                     <button type="submit" data-save>Save</button>
@@ -58,7 +63,7 @@
                 <input type="text" name="Name" placeholder="Key (note: colon ':' will be replaced by '--')" />
             </td>
             <td>
-                <input type="text" name="Value" placeholder="Value" />
+                <textarea class="input-textarea" name="Value" wrap="off"></textarea>
             </td>
             <td>
                 <button type="submit" name="Save">Save</button>
