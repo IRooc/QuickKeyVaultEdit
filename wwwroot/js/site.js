@@ -15,10 +15,11 @@
 }
 
 {
-   //remove saved class
+   //scroll into view and remove saved class
    const allSaved = document.querySelectorAll('tr.saved');
    if (allSaved.length > 0) {
       console.log('saved');
+      allSaved[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
       for (let i = 0; i < allSaved.length; i++) {
          const saved = allSaved[i];
          setTimeout(() => {
