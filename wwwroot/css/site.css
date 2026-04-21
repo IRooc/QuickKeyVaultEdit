@@ -16,6 +16,12 @@ ul.failed {
     color: red;
 }
 
+h1 {
+    position: sticky;
+    background: white;
+    top: 0;
+}
+
 table {
     border-collapse: collapse;
     width: 90vw
@@ -24,8 +30,7 @@ table {
     table th {
         padding: 0.5rem;
         position: sticky;
-        position: -webkit-sticky;
-        top: 0px;
+        top: 34px;
         z-index: 2;
         background-color: lightgray;
         text-align: left;
@@ -39,7 +44,7 @@ table {
     table tr {
         border-bottom: 1px solid lightgrey;
         background-color: transparent;
-        transition: background-color 5s linear; 
+        transition: background-color 5s linear;
     }
 
         table tr.saved {
@@ -52,7 +57,7 @@ table {
 
     table input,
     table textarea {
-        width: 100%;        
+        width: 100%;
     }
         table textarea.input-textarea {
             height: 1.3rem;
@@ -98,7 +103,7 @@ table {
     width: 40em;
     background-color: white;
     height: auto;
-    
+
     position: fixed;
     left: calc(50% - 20em - 20px);
     padding: 20px;
