@@ -1,9 +1,19 @@
 ﻿@page
+@using Azure
+@using Azure.Security.KeyVault.Secrets
 @model KeyVaultEditor.Pages.KeyVaultModel
 @{
     ViewData["Title"] = "KeyVault Edit";
-    var secrets = await Model.KeyVaultService.GetAllSecretsAsync();
-
+    Exception? exception = null;
+    IList<KeyVaultSecret>? secrets = null;
+    try
+    {
+        secrets = await Model.KeyVaultService.GetAllSecretsAsync();
+    }
+    catch (Exception ex)
+    {
+        exception = ex;
+    }
     string TypeFromName(string name)
     {
         if (name.IndexOf("Secret", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
@@ -17,122 +27,145 @@
     }
 }
 <h1>KeyVault: <a href="/">@(Model.KeyVaultService.Url ?? "set url")</a></h1>
-<table>
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Value</th>
-            <th width="10"></th>
-            <th width="10"></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var s in secrets)
-        {
-            <tr class="@(Model.Saved.Contains(s.Name) ? "saved":null)">
-                <form method="post">
-                <td>
+@if (exception != null)
+{
+    @if (exception is RequestFailedException rfe)
+    {
+        <p>Access to the keyvault denied, try adding your IP or managing the Access Policies</p>
+        <code>
+            <span class="green"># Set commandline to correct subscription</span><br/>
+            az account set -s &lt;subscriptionid&gt;<br /><br />
+            <span class="green"># Set access policy for Secret read, write update</span><br/>
+            az keyvault set-policy -n @Model.KeyVaultService.KeyvaultName --object-id @Model.GetObjectId(rfe.Message) --secret-permissions all --key-permissions list get --certificate-permissions list get<br /><br />
+            <span class="green"># Add ip to firewall</span><br/>
+            az keyvault network-rule add -n @Model.KeyVaultService.KeyvaultName --ip-address @(await Model.GetIP(rfe.Message))<br /><br />
+            <span class="green"># list all settings from keyvault</span><br/>
+            az keyvault show -n @Model.KeyVaultService.KeyvaultName<br /><br />
+        </code>
+    }
+        <pre>Error: @exception.ToString()</pre>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Value</th>
+                <th width="10"></th>
+                <th width="10"></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var s in secrets)
+            {
+                <tr class="@(Model.Saved.Contains(s.Name) ? "saved" : null)">
+                    <form method="post">
+                    <td>
                         @s.Name
-                    <input type="hidden" name="Name" value="@s.Name" />
-                </td>
-                <td>
+                        <input type="hidden" name="Name" value="@s.Name" />
+                    </td>
+                    <td>
                         @if (TypeFromName(s.Name) == "password")
                         {
                             <input type="@TypeFromName(s.Name)" name="Value" value="@s.Value" />
-                        } else {
+                        }
+                        else
+                        {
                             <textarea class="input-textarea" name="Value" wrap="off">@s.Value</textarea>
                         }
-                </td>
-                <td>
-                    <button type="submit" data-save>Save</button>
-                </td>
-                </form>
-                <td>
-                    <form method="post" asp-page-handler="Delete">
-                        <input type="hidden" name="Delete" value="true" />
-                        <input type="hidden" name="Name" value="@s.Name" />
-
-                        <button type="submit" onclick="return confirm('Are you sure?')" style="color:red">❌</button>
+                    </td>
+                    <td>
+                        <button type="submit" data-save>Save</button>
+                    </td>
                     </form>
+                    <td>
+                        <form method="post" asp-page-handler="Delete">
+                            <input type="hidden" name="Delete" value="true" />
+                            <input type="hidden" name="Name" value="@s.Name" />
+
+                            <button type="submit" onclick="return confirm('Are you sure?')" style="color:red">❌</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            <form method="post">
+            <tr>
+                <td>
+                    <input type="text" name="Name" placeholder="Key (note: colon ':' will be replaced by '--')" />
+                </td>
+                <td>
+                    <textarea class="input-textarea" name="Value" wrap="off"></textarea>
+                </td>
+                <td>
+                    <button type="submit" name="Save">Save</button>
                 </td>
             </tr>
-        }
-        <form method="post">
-        <tr>
-            <td>
-                <input type="text" name="Name" placeholder="Key (note: colon ':' will be replaced by '--')" />
-            </td>
-            <td>
-                <textarea class="input-textarea" name="Value" wrap="off"></textarea>
-            </td>
-            <td>
-                <button type="submit" name="Save">Save</button>
-            </td>
-        </tr>
-        </form>
-        <form method="post" asp-page-handler="Multiple" enctype="multipart/form-data">
-        <tr>
-            <td>Add multiple settings from config</td>
-            <td><textarea name="Multiple"></textarea></td>
-            <td>
-                <table class="small">
-                    <tr>
-                        <td>
-                            <label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label>
-                        </td>
-                        <td>
-                            <button type="submit" name="Save">Save</button>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-            <td></td>
-        </tr>
-        </form>
-        <form method="post" asp-page-handler="Upload" enctype="multipart/form-data">
-        <tr>
-            <td>
-                Upload appsettings.json file
-            </td>
-            <td>
-                <table class="small">
-                    <tr>
-                        <td><input type="file" name="Settings" /></td>
-                        <td><label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label></td>
-                    </tr>
-                </table>
+            </form>
+            <form method="post" asp-page-handler="Multiple" enctype="multipart/form-data">
+            <tr>
+                <td>Add multiple settings from config</td>
+                <td><textarea name="Multiple"></textarea></td>
+                <td>
+                    <table class="small">
+                        <tr>
+                            <td>
+                                <label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label>
+                            </td>
+                            <td>
+                                <button type="submit" name="Save">Save</button>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td></td>
+            </tr>
+            </form>
+            <form method="post" asp-page-handler="Upload" enctype="multipart/form-data">
+            <tr>
+                <td>
+                    Upload appsettings.json file
+                </td>
+                <td>
+                    <table class="small">
+                        <tr>
+                            <td><input type="file" name="Settings" /></td>
+                            <td><label><input type="checkbox" name="Overwrite" value="true" />Overwrite</label></td>
+                        </tr>
+                    </table>
 
-            </td>
-            <td>
-            <button type="submit" name="Save">Upload</button>
-            </td>
-            <td>
-            </td>
-        </tr>
-        </form>
-        <tr>
-            <td colspan="4" style="display:flex;gap:2rem;">
-                <a asp-page-handler="Download" target="_blank">Download appsettings.json</a>
-                <a asp-page-handler="DownloadAzureEnv" target="_blank">Download azure environment settings</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
+                </td>
+                <td>
+                    <button type="submit" name="Save">Upload</button>
+                </td>
+                <td>
+                </td>
+            </tr>
+            </form>
+            <tr>
+                <td colspan="4" style="display:flex;gap:2rem;">
+                    <a asp-page-handler="Download" target="_blank">Download appsettings.json</a>
+                    <a asp-page-handler="DownloadAzureEnv" target="_blank">Download azure environment settings</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
-<div class="modal @(Model.Failed.Any() ? "show":"")">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-        <div class="modal-header">
+    <div class="modal @(Model.Failed.Any() ? "show" : "")">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <div class="modal-header">
 
-            <ul class="failed">
-                @foreach (var f in Model.Failed)
-                {
-                    <li>Failed to Save @f</li>
-                }
-            </ul>
-        </div>
-        <div class="modal-footer">
-            <button data-dismiss>Close</button>
+                <ul class="failed">
+                    @foreach (var f in Model.Failed)
+                    {
+                        <li>Failed to Save @f</li>
+                    }
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button data-dismiss>Close</button>
+            </div>
         </div>
     </div>
-</div>
+}

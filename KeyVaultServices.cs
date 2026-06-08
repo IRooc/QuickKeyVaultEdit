@@ -8,6 +8,7 @@ namespace KeyVaultEditor
         private SecretClient? secretClient;
         private readonly ILogger<KeyVaultServices> logger;
         public string? Url { get; set; }
+        public string? KeyvaultName { get; set; }
 
         public KeyVaultServices(ILogger<KeyVaultServices> logger)
         {
@@ -19,6 +20,16 @@ namespace KeyVaultEditor
             if (Url != url.AbsoluteUri)
             {
                 Url = url.AbsoluteUri;
+                var host = url.Host;
+                var dotIndex = host.IndexOf('.');
+                if (dotIndex > 0)
+                {
+                    KeyvaultName = host.Substring(0, dotIndex);
+                }
+                else
+                {
+                    KeyvaultName = host;
+                }
                 logger.LogInformation("Accessing {keyvault}", url);
                 secretClient = new SecretClient(url, new DefaultAzureCredential());
             }

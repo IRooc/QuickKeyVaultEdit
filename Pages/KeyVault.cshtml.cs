@@ -8,10 +8,12 @@ namespace KeyVaultEditor.Pages
 {
     public class KeyVaultModel : PageModel
     {
+        private readonly IHttpClientFactory httpClientFactory;
 
-        public KeyVaultModel(KeyVaultServices keyVaultService)
+        public KeyVaultModel(KeyVaultServices keyVaultService, IHttpClientFactory httpClientFactory)
         {
             KeyVaultService = keyVaultService;
+            this.httpClientFactory = httpClientFactory;
         }
 
         public KeyVaultServices KeyVaultService { get; }
@@ -173,6 +175,28 @@ namespace KeyVaultEditor.Pages
                     Failed.Add($"{jobj.Name}: Unsupported value kind in Json {jobj.Value.ValueKind} with value {jobj.Value}");
                 }
             }
+        }
+        public string GetObjectId(string message)
+        {
+            var ix = message.IndexOf("oid=");
+            if (ix > 0 && ix < message.Length)
+            {
+                var lineend = message.IndexOf(";", ix);
+                return message.Substring(ix + 4, lineend - ix - 4);
+            }
+            return "&gt;entra-objectid&gt;";
+        }
+
+        public async Task<string> GetIP(string message)
+        {
+            var ix = message.IndexOf("Client address:");
+            if (ix > 0 && ix < message.Length)
+            {
+                var lineend = message.IndexOf("\n", ix);
+                return message.Substring(ix + 15, lineend - ix - 15);
+            }
+            var client = httpClientFactory.CreateClient();
+            return await client.GetStringAsync("https://api.ipify.org");
         }
     }
 

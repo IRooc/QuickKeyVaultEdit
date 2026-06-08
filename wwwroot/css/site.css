@@ -22,6 +22,15 @@ h1 {
     top: 0;
 }
 
+code {
+    padding: 1rem;
+    background: lightgray;
+    display: block;
+}
+    code .green {
+        color: green;
+    }
+
 table {
     border-collapse: collapse;
     width: 90vw
